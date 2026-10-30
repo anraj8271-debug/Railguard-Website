@@ -13,7 +13,7 @@ const TRAIN_COACHES = ["S3", "S2", "S1", "B2", "B1", "A1", "ENGINE_GATEWAY"];
 
 app.use(express.json());
 
-// Enable explicit CORS headers so the browser never blocks your buttons
+// Enable explicit CORS headers so the browser never blocks requests
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -25,17 +25,24 @@ app.use(express.static(__dirname));
 
 let alertState = { status: "SAFE", coach: "S3", berth: "34" };
 
+// Serve Laptop Dashboard
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
+// Serve Mobile Client Page
+app.get('/mobile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'phone.html'));
+});
+
+// POST Endpoint: Trigger Multi-Hop Relay across train mesh to ENGINE_GATEWAY
 app.post('/trigger-sos', (req, res) => {
     const data = req.body;
     alertState.status = "SOS";
     alertState.coach = data.coach || "S3";
     alertState.berth = data.berth || "34";
     
-    console.log(`\n⚠️ SOS Activated at Coach: ${alertState.coach}`);
+    console.log(`\n⚠️ SOS Activated from Mobile Device! Origin Coach: ${alertState.coach}`);
 
     // Trigger the Step-by-Step Multi-Hop Routing Loop down the train cars
     let currentIdx = 0;
@@ -46,7 +53,7 @@ app.post('/trigger-sos', (req, res) => {
             let activeHopCoach = TRAIN_COACHES[currentIdx];
             hopCount++;
             
-            // Broadcast current position to the UI
+            // Broadcast current position live via WebSockets to dashboard.html
             wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({ 
@@ -64,18 +71,19 @@ app.post('/trigger-sos', (req, res) => {
         } else {
             clearInterval(relayInterval);
         }
-    }, 800); // 0.8 seconds per hop for a quick, responsive animation
+    }, 800); // 0.8 seconds per hop for a smooth, responsive animation
 
-    res.json({ success: true });
+    res.json({ success: true, message: "Threat packages dispatched to mesh routing pipeline" });
 });
 
 wss.on('connection', (ws) => {
-    console.log('📱 Dashboard linked to Local Radio Mesh channel.');
+    console.log('📱 Live Dashboard linked to Radio Mesh channel.');
 });
 
-server.listen(PORT, "127.0.0.1", () => {
+server.listen(PORT, "0.0.0.0", () => {
     console.log("\n==================================================");
     console.log("🚀 [RAILGUARD UNIFIED BACKEND SERVER ACTIVE]");
-    console.log(`📡 Open Dashboard at: http://127.0.0.1:${PORT}`);
+    console.log(`📡 Open Dashboard at: http://localhost:${PORT}`);
+    console.log(`📱 Open Mobile UI at:  http://<your-laptop-ip>:${PORT}/mobile`);
     console.log("==================================================\n");
 });
