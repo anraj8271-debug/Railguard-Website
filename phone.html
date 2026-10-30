@@ -1,0 +1,193 @@
+//
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RailGuard Mobile Client</title>
+    <style>
+        body {
+            background-color: #0D1117;
+            color: #FFFFFF;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Ambient Header Tracking Info */
+        .status-header {
+            position: absolute;
+            top: 40px;
+            text-align: center;
+            font-size: 14px;
+            color: #8B949E;
+            letter-spacing: 1px;
+            line-height: 1.6;
+        }
+
+        .bold-blue {
+            color: #58A6FF;
+            font-weight: bold;
+        }
+
+        /* Central Interactive State Widget Button */
+        .sos-button {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.7);
+        }
+
+        /* Safe State Layout Configuration */
+        .sos-button.state-safe {
+            background: linear-gradient(135deg, #1F6FEB 0%, #58A6FF 100%);
+            border: 4px solid #58A6FF;
+            animation: pulse-blue 2.5s infinite;
+        }
+
+        /* Triggered Panic State Layout Configuration */
+        .sos-button.state-panic {
+            background: linear-gradient(135deg, #890b1d 0%, #FF0055 100%);
+            border: 4px solid #FF0055;
+            animation: pulse-red 1s infinite;
+        }
+
+        .button-subtext {
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        /* Footer System Analytics Metrics */
+        .status-footer {
+            position: absolute;
+            bottom: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #8B949E;
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #56D364;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .pulse-dot.panic {
+            background-color: #FF0055;
+            animation: flash 0.5s infinite alternate;
+        }
+
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.5); }
+            70% { box-shadow: 0 0 0 25px rgba(88, 166, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.6); transform: scale(1); }
+            50% { transform: scale(0.96); }
+            70% { box-shadow: 0 0 0 35px rgba(255, 0, 85, 0); transform: scale(1); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="status-header">
+        🛡️ SYSTEM SECURITY CODE: <span class="bold-blue" id="locCode">TRAIN_MODE_ACTIVE</span><br>
+        <span style="font-size: 12px;" id="subHeader">Local Hardware Monitoring On</span>
+    </div>
+
+    <!-- Central Toggle Button Element -->
+    <div class="sos-button state-safe" id="widgetButton" onclick="triggerPanicMesh()">
+        <span id="btnText">SAFE</span>
+        <span class="button-subtext" id="btnSubtext">TAP IF IN DANGER</span>
+    </div>
+
+    <div class="status-footer">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 6px;">
+            <span class="pulse-dot" id="statusDot"></span>
+            <span id="footerStatus" style="color: #56D364; font-weight: bold;">LOCAL MESH ACTIVE</span>
+        </div>
+        <span style="color:#8B949E;">Edge AI Acoustic Guardian Active</span>
+    </div>
+
+    <script>
+    let isTriggered = false;
+
+    function triggerPanicMesh() {
+        if (isTriggered) return;
+        isTriggered = true;
+
+        const btn = document.getElementById('widgetButton');
+        const txt = document.getElementById('btnText');
+        const subTxt = document.getElementById('btnSubtext');
+        const dot = document.getElementById('statusDot');
+        const footerTxt = document.getElementById('footerStatus');
+        const loc = document.getElementById('locCode');
+        const subHeader = document.getElementById('subHeader');
+
+        // Transition Mobile UI State
+        btn.classList.remove('state-safe');
+        btn.classList.add('state-panic');
+        txt.innerText = "SOS ACTIVE";
+        subTxt.innerText = "DISPATCHING PACKETS";
+        
+        dot.classList.add('panic');
+        footerTxt.innerText = "SIGNAL DISPATCHED TO MESH";
+        footerTxt.style.color = "#FF0055";
+        
+        loc.innerText = "COACH_S3_B34";
+        loc.style.color = "#FF0055";
+        subHeader.innerText = "Multi-Hop Hardware Chain Engaged";
+
+        if (navigator.vibrate) {
+            navigator.vibrate([100, 50, 100, 50, 300]);
+        }
+
+        // Send payload to backend server
+        fetch('/trigger-sos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coach: 'S3', berth: '34' })
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log('Threat package successfully sent to gateway mesh:', data);
+            subTxt.innerText = "BROADCAST SENT";
+        })
+        .catch(err => {
+            console.error('Transmission error:', err);
+            subTxt.innerText = "RETRYING DISPATCH";
+        });
+    }
+</script>
+</body>
+</html>
