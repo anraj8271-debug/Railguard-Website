@@ -1,0 +1,21 @@
+# Node.js local cache and environments
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Python compilation runtime files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+
+# System Environment Metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
